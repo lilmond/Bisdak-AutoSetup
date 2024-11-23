@@ -5,7 +5,7 @@ import time
 class SetupConfig:
     NODE_LIST = "./serverlist.txt"
     KEY = "ovh1"
-    SETUP_PASSWORD = "my very cool ssh password"
+    SETUP_PASSWORD = "my cool ssh password"
 
 class AppConfig:
     THREADS = 10
@@ -79,7 +79,7 @@ def setup_nginx(hostname: str, subdomains: list):
     finally:
         AppConfig.ACTIVE_THREADS -= 1
 
-def setup_firewall(hostname: str):
+def setup_firewall(hostname: str, length: int):
     AppConfig.ACTIVE_THREADS += 1
 
     try:
@@ -125,7 +125,7 @@ fi
 """)
         stdout.read()
 
-        for i in range(2, 6):
+        for i in range(2, length + 2):
             ovh_ip = hostname
             vps_ip = f"10.0.0.{i}"
             peer_port = int(f"4{i}000")
@@ -301,12 +301,13 @@ def main():
 
     for node in node_list:
         server_name, server_hostname = node.split(" ")
+        subdomains = servername_to_subdomains(server_name=server_name)
 
         while True:
             if AppConfig.ACTIVE_THREADS >= AppConfig.THREADS:
                 time.sleep(0.05)
                 continue
-            threading.Thread(target=setup_firewall, args=[server_hostname], daemon=True).start()
+            threading.Thread(target=setup_firewall, args=[server_hostname, len(subdomains)], daemon=True).start()
             break
 
     wait_threads()
