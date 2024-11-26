@@ -1,3 +1,8 @@
+# Version: 1.1.0
+
+SERVER_LIST = "serverlist.txt"
+OUTPUT_FILE = "nodes_info.txt"
+
 def get_num_domain(num: int):
     x = 0
 
@@ -32,7 +37,7 @@ def servername_to_subdomains(server_name: str):
     return subdomains
 
 def main():
-    with open("serverlist.txt", "r") as file:
+    with open(SERVER_LIST, "r") as file:
         node_list = [x.strip() for x in file.read().splitlines() if x.strip() and not x.strip().startswith("#")]
         file.close()
 
@@ -43,12 +48,24 @@ def main():
 
         subdomains = servername_to_subdomains(server_name=server_name)
         
+        evernode_port = 42000
+        start_ssh_port = 30002
+
         log_text += f"{server_name}\n"
         for i, subdomain in enumerate(subdomains, start=2):
-            log_text += f"{subdomain}\nVPS IP: 10.0.0.{i}\nSSH Port: 3000{i}\nPeer Port: 4{i}000\nUser Port: 4{i}050\nGeneral TCP Port: 4{i}100\nUDP Port: 4{i}150\n\n"
+            vps_ip = f"10.0.0.{i}"
+            peer_port = evernode_port
+            user_port = evernode_port + 50
+            tcp_port = evernode_port + 100
+            udp_port = evernode_port + 150
+            ssh_port = start_ssh_port
+            start_ssh_port += 1
+            evernode_port += 1000
+
+            log_text += f"{subdomain}\nVPS IP: 10.0.0.{i}\nSSH Port: {ssh_port}\nPeer Port: {peer_port}\nUser Port: {user_port}\nGeneral TCP Port: {tcp_port}\nUDP Port: {udp_port}\n\n"
         log_text += "\n"
     
-    with open("nodes_info.txt", "w") as file:
+    with open(OUTPUT_FILE, "w") as file:
         file.write(log_text)
         file.close()    
 
